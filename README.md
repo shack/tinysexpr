@@ -30,7 +30,7 @@ Atoms are parsed using two different rules:
 ## Details
 
 The parameters of `read` are:
-1. `file_like`: An object that is [file like]() and provides a `read` method.
+1. `file_like`: An object that is [file like](https://docs.python.org/3/glossary.html#term-file-object) i.e. provides a `read` method.
 2. `delims`: A map of delimiters used to surround atoms that contain spaces.
    Commonly these are double-quotes to represent strings as in `"Hello"` or
    vertical bars to allow for symbols that contain spaces as in `|some symbol|`.

@@ -1,6 +1,6 @@
 # S-Expression Parser
 
-A very simple [S-expression](https://en.m.wikipedia.org/wiki/S-expression) parser that tries to make as little fuzz as possible.
+A very simple [S-expression](https://en.m.wikipedia.org/wiki/S-expression) parser that tries to make as little fuss as possible.
 
 ## Example
 

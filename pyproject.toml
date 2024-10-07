@@ -24,4 +24,4 @@ dependencies = [
 ]
 
 [project.urls]
-"GitHub" = "https://github.com/shack/sexpr"
+"GitHub" = "https://github.com/shack/tinysexpr"

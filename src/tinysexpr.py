@@ -1,8 +1,4 @@
-from io import StringIO
-
-import pytest
-
-_UNEXPECTED_EOF = 'unexpected end of file'
+UNEXPECTED_EOF = 'unexpected end of file'
 
 class SyntaxError(Exception):
     def __init__(self, msg):
@@ -102,7 +98,7 @@ def read(file_like, delims=DEFAULT_DELIMS, comment_char=';', atom_handler=lambda
         while True:
             c = skip_ws()
             if not c:
-                error(_UNEXPECTED_EOF)
+                error(UNEXPECTED_EOF)
             match c:
                 case '(':
                     next()
@@ -123,32 +119,6 @@ def read(file_like, delims=DEFAULT_DELIMS, comment_char=';', atom_handler=lambda
     else:
         error(f"expected '(', got '{c}'")
     return parse()
-
-@pytest.mark.parametrize("input,expected", [
-    ('()', []),
-    ('(|a b c| || "abc\\"def" |abcgf xs!!|)', ['|a b c|', '||', '"abc"def"', '|abcgf xs!!|']),
-    ('(abc b0!@#$% c-d)', ['abc', 'b0!@#$%', 'c-d']),
-    (u'(1😀)', ['1😀']),
-    ('(a b c (d e f () |x yz|))', ['a', 'b', 'c', ['d', 'e', 'f', [], '|x yz|']]),
-    ('(1 (2 3) (4 5) 6 (7 (8 9)))', ['1', ['2', '3'], ['4', '5'], '6', ['7', ['8', '9']]]),
-    ('(1 (2 3) (4 5)); 6 (7 (8 9)))', ['1', ['2', '3'], ['4', '5']]),
-])
-def test_correct(input, expected):
-    assert read(StringIO(input)) == expected
-
-@pytest.mark.parametrize("input,msg", [
-    ('', _UNEXPECTED_EOF),
-    ('abc', "expected '(', got 'a'"),
-    ('(a', _UNEXPECTED_EOF),
-    ('|a b c', _UNEXPECTED_EOF),
-    ('"abc"cde"', _UNEXPECTED_EOF),
-    ('"abc\\9cde"', "invalid escape character"),
-    ('(1 (2 3) (4 5) 6 (7 (8 9))', _UNEXPECTED_EOF),
-])
-def test_error(input, msg):
-    with pytest.raises(SyntaxError) as e:
-        read(StringIO(input))
-        assert msg in str(e)
 
 if __name__ == '__main__':
     import sys

@@ -42,3 +42,7 @@ The parameters of `read` are:
    atom. The function can convert this string into something else and the
    returned value is used to construct the S-expression.
    For example, this allows for converting digit sequences into ints.
+
+## Testing
+
+To run the tests, execute `python -m pytest` in the `src/` directory.

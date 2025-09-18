@@ -4,7 +4,9 @@ import tinysexpr
 from io import StringIO
 
 @pytest.mark.parametrize("input,expected", [
+    ('', None),
     ('()', []),
+    ('  ()    ', []),
     ('(|a b c| || "abc\\"def" |abcgf xs!!|)', ['|a b c|', '||', '"abc"def"', '|abcgf xs!!|']),
     ('(abc b0!@#$% c-d)', ['abc', 'b0!@#$%', 'c-d']),
     (u'(1😀)', ['1😀']),
@@ -16,8 +18,11 @@ def test_correct(input, expected):
     assert tinysexpr.read(StringIO(input)) == expected
 
 @pytest.mark.parametrize("input,cls", [
-    ('', tinysexpr.UnexpectedEOF),
+    # ('', tinysexpr.UnexpectedEOF),
     ('abc', tinysexpr.UnexpectedChar),
+    ('(', tinysexpr.UnexpectedEOF),
+    ('(  ', tinysexpr.UnexpectedEOF),
+    ('(a  ', tinysexpr.UnexpectedEOF),
     ('(a', tinysexpr.UnexpectedEOF),
     ('(|a b c', tinysexpr.UnexpectedEOF),
     ('("abc"cde"', tinysexpr.UnexpectedEOF),

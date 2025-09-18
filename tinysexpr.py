@@ -128,7 +128,7 @@ def read(file_like, delims=DEFAULT_DELIMS, comment_char=';', atom_handler=lambda
             next()
             return parse()
         case '':
-            raise UnexpectedEOF()
+            return None
         case c:
             raise UnexpectedChar('(', c)
 

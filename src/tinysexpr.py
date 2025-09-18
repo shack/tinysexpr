@@ -1,11 +1,24 @@
-UNEXPECTED_EOF = 'unexpected end of file'
-
 class SyntaxError(Exception):
     def __init__(self, msg):
         self.value = msg
 
     def __str__(self):
         return self.value
+
+class X:
+    pass
+
+class UnexpectedEOF(SyntaxError):
+    def __init__(self):
+        super().__init__('unexpected end of file')
+
+class UnexpectedChar(SyntaxError):
+    def __init__(self, expected, got):
+        super().__init__(f"expected '{expected}', got '{got}'")
+
+class InvalidEscape(SyntaxError):
+    def __init__(self, char):
+        super().__init__(f"invalid escape character '{char}'")
 
 DEFAULT_DELIMS = {
     '"': ('\\', { 'n': '\n', 't': '\t', 'r': '\r', '\\': '\\', '"': '"' }),
@@ -61,9 +74,6 @@ def read(file_like, delims=DEFAULT_DELIMS, comment_char=';', atom_handler=lambda
                 break
         return c
 
-    def error(msg):
-        raise SyntaxError(f'{msg} at {row}:{col}')
-
     def parse():
 
         def read_delim(delim, delim_info):
@@ -77,7 +87,7 @@ def read(file_like, delims=DEFAULT_DELIMS, comment_char=';', atom_handler=lambda
                         if c in escape_map:
                             read.append(escape_map[c])
                         else:
-                            error(f"invalid escape character '{c}'")
+                            raise InvalidEscape(c)
                     case _ if c == delim:
                         read.append(c)
                         next()
@@ -98,7 +108,7 @@ def read(file_like, delims=DEFAULT_DELIMS, comment_char=';', atom_handler=lambda
         while True:
             c = skip_ws()
             if not c:
-                error(UNEXPECTED_EOF)
+                raise UnexpectedEOF()
             match c:
                 case '(':
                     next()
@@ -113,12 +123,14 @@ def read(file_like, delims=DEFAULT_DELIMS, comment_char=';', atom_handler=lambda
                     assert not c.isspace()
                     exp.append(atom_handler(read_atom()))
 
-    c = skip_ws()
-    if c == '(':
-        next()
-    else:
-        error(f"expected '(', got '{c}'")
-    return parse()
+    match skip_ws():
+        case '(':
+            next()
+            return parse()
+        case '':
+            raise UnexpectedEOF()
+        case c:
+            raise UnexpectedChar('(', c)
 
 if __name__ == '__main__':
     import sys

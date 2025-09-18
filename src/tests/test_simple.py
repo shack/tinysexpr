@@ -15,17 +15,15 @@ from io import StringIO
 def test_correct(input, expected):
     assert tinysexpr.read(StringIO(input)) == expected
 
-@pytest.mark.parametrize("input,msg", [
-    ('', tinysexpr.UNEXPECTED_EOF),
-    ('abc', "expected '(', got 'a'"),
-    ('(a', tinysexpr.UNEXPECTED_EOF),
-    ('|a b c', tinysexpr.UNEXPECTED_EOF),
-    ('"abc"cde"', tinysexpr.UNEXPECTED_EOF),
-    ('"abc\\9cde"', "invalid escape character"),
-    ('(1 (2 3) (4 5) 6 (7 (8 9))', tinysexpr.UNEXPECTED_EOF),
+@pytest.mark.parametrize("input,cls", [
+    ('', tinysexpr.UnexpectedEOF),
+    ('abc', tinysexpr.UnexpectedChar),
+    ('(a', tinysexpr.UnexpectedEOF),
+    ('(|a b c', tinysexpr.UnexpectedEOF),
+    ('("abc"cde"', tinysexpr.UnexpectedEOF),
+    ('("abc\\9cde"', tinysexpr.InvalidEscape),
+    ('(1 (2 3) (4 5) 6 (7 (8 9))', tinysexpr.UnexpectedEOF),
 ])
-def test_error(input, msg):
-    with pytest.raises(tinysexpr.SyntaxError) as e:
+def test_error(input, cls):
+    with pytest.raises(cls) as e:
         tinysexpr.read(StringIO(input))
-        assert msg in str(e)
-

@@ -1,6 +1,6 @@
 [build-system]
-requires = ["setuptools>=61.0"]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling==1.26.3", "hatch-vcs"]
+build-backend = "hatchling.build"
 
 [project]
 name = "tinysexpr"
@@ -10,14 +10,13 @@ authors = [
 version = "1.2"
 description = "A very simple S-expression parser that tries to make as little fuss as possible."
 readme = "README.md"
-license = { text="MIT" }
+license = "MIT"
 requires-python = ">=3.10"
 classifiers = [
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
-    "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent"
 ]
 dependencies = [

@@ -45,4 +45,4 @@ The parameters of `read` are:
 
 ## Testing
 
-To run the tests, execute `python -m pytest` in the `src/` directory.
+To run the tests, execute `python -m pytest`.

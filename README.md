@@ -13,7 +13,7 @@ Reading
 ```
 (a b c (123 e f () x))
 ```
-returns
+returns a `Sequence` object that corresponds to this nesting:
 ```
 ['a', 'b', 'c', ['123', 'e', 'f', [], 'x']]
 ```
@@ -45,4 +45,4 @@ The parameters of `read` are:
 
 ## Testing
 
-To run the tests, execute `python -m pytest`.
+To run the tests, execute `uv run pytest`.

@@ -3,6 +3,9 @@ import tinysexpr
 
 from io import StringIO
 
+def to_list(sexpr):
+    return [ to_list(x) if isinstance(x, tinysexpr.SExpr) else x for x in sexpr ]
+
 @pytest.mark.parametrize("input,expected", [
     ('', None),
     ('()', []),
@@ -15,7 +18,8 @@ from io import StringIO
     ('(1 (2 3) (4 5)); 6 (7 (8 9)))', ['1', ['2', '3'], ['4', '5']]),
 ])
 def test_correct(input, expected):
-    assert tinysexpr.read(StringIO(input)) == expected
+    res = tinysexpr.read(StringIO(input))
+    assert to_list(res) == expected if expected is not None else res == None
 
 @pytest.mark.parametrize("input,cls", [
     # ('', tinysexpr.UnexpectedEOF),

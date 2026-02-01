@@ -1,12 +1,26 @@
+from collections.abc import Sequence
+
+class SExpr(Sequence):
+    def __init__(self, s, coord):
+        self.s = s
+        self.coord = coord
+
+    def __getitem__(self, i):
+        return self.s[i]
+
+    def __len__(self):
+        return len(self.s)
+
+    def __str__(self):
+        inner = ' '.join(str(s) for s in self.s)
+        return f'({inner})'
+
 class SyntaxError(Exception):
     def __init__(self, msg):
         self.value = msg
 
     def __str__(self):
         return self.value
-
-class X:
-    pass
 
 class UnexpectedEOF(SyntaxError):
     def __init__(self):
@@ -25,7 +39,7 @@ DEFAULT_DELIMS = {
     '|': (None, {})
 }
 
-def read(file_like, delims=DEFAULT_DELIMS, comment_char=';', atom_handler=lambda x: x):
+def read(file_like, delims=DEFAULT_DELIMS, comment_char=';', atom_handler=lambda x: x) -> SExpr:
     """Parse an S-expression from a file-like object.
 
     The function takes the following arguments:
@@ -74,8 +88,7 @@ def read(file_like, delims=DEFAULT_DELIMS, comment_char=';', atom_handler=lambda
                 break
         return c
 
-    def parse():
-
+    def parse(coord):
         def read_delim(delim, delim_info):
             escape_char, escape_map = delim_info
             read = [curr()]
@@ -111,12 +124,13 @@ def read(file_like, delims=DEFAULT_DELIMS, comment_char=';', atom_handler=lambda
                 raise UnexpectedEOF()
             match c:
                 case '(':
+                    coord = (row, col)
                     next()
-                    s = parse()
+                    s = parse(coord)
                     exp.append(s)
                 case ')':
                     next()
-                    return exp
+                    return SExpr(tuple(exp), coord)
                 case _ if c in delims:
                     exp.append(atom_handler(read_delim(c, delims[c])))
                 case _:
@@ -125,8 +139,9 @@ def read(file_like, delims=DEFAULT_DELIMS, comment_char=';', atom_handler=lambda
 
     match skip_ws():
         case '(':
+            coord = (row, col)
             next()
-            return parse()
+            return parse(coord)
         case '':
             return None
         case c:

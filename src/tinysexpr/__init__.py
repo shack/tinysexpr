@@ -143,12 +143,12 @@ def read(file_like, delims=DEFAULT_DELIMS, comment_char=';', atom_handler=lambda
                     next()
                     return SExpr(tuple(exp), (begin, prev_coord), tuple(ranges))
                 case _ if c in delims:
-                    b = coord
+                    b = prev_coord
                     exp.append(atom_handler(read_delim(c, delims[c])))
                     ranges.append((b, prev_coord))
                 case _:
                     assert not c.isspace()
-                    b = coord
+                    b = prev_coord
                     exp.append(atom_handler(read_atom()))
                     ranges.append((b, prev_coord))
 

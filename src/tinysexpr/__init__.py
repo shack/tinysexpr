@@ -48,7 +48,7 @@ DEFAULT_DELIMS = {
     '|': (None, {})
 }
 
-def read(file_like, coord=(1, 1), delims=DEFAULT_DELIMS, comment_char=';', atom_handler=lambda x: x) -> tuple[SExpr, Coord]:
+def read(file_like, delims=DEFAULT_DELIMS, comment_char=';', atom_handler=lambda x: x):
     """Parse an S-expression from a file-like object.
 
     The function takes the following arguments:
@@ -69,6 +69,7 @@ def read(file_like, coord=(1, 1), delims=DEFAULT_DELIMS, comment_char=';', atom_
 
     sym_delim = { c for c in '()' + comment_char + ''.join(delims.keys()) }
     ch = file_like.read(1)
+    coord = (1, 1)
     prev_coord = None
 
     def curr():
@@ -135,12 +136,12 @@ def read(file_like, coord=(1, 1), delims=DEFAULT_DELIMS, comment_char=';', atom_
             match c:
                 case '(':
                     next()
-                    s, _ = parse(prev_coord)
+                    s = parse(prev_coord)
                     exp.append(s)
                     ranges.append(s.range)
                 case ')':
                     next()
-                    return SExpr(tuple(exp), (begin, prev_coord), tuple(ranges)), coord
+                    return SExpr(tuple(exp), (begin, prev_coord), tuple(ranges))
                 case _ if c in delims:
                     b = coord
                     exp.append(atom_handler(read_delim(c, delims[c])))
@@ -151,14 +152,15 @@ def read(file_like, coord=(1, 1), delims=DEFAULT_DELIMS, comment_char=';', atom_
                     exp.append(atom_handler(read_atom()))
                     ranges.append((b, prev_coord))
 
-    match skip_ws():
-        case '(':
-            next()
-            return parse(prev_coord)
-        case '':
-            return (None, coord)
-        case c:
-            raise UnexpectedChar('(', c)
+    while True:
+        match skip_ws():
+            case '(':
+                next()
+                yield parse(prev_coord)
+            case '':
+                return
+            case c:
+                raise UnexpectedChar('(', c)
 
 if __name__ == '__main__':
     import sys

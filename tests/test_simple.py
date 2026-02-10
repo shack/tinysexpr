@@ -7,19 +7,20 @@ def to_list(sexpr):
     return [ to_list(x) if isinstance(x, tinysexpr.SExpr) else x for x in sexpr ]
 
 @pytest.mark.parametrize("input,expected", [
-    ('', None),
-    ('()', []),
-    ('  ()    ', []),
-    ('(|a b c| || "abc\\"def" |abcgf xs!!|)', ['|a b c|', '||', '"abc"def"', '|abcgf xs!!|']),
-    ('(abc b0!@#$% c-d)', ['abc', 'b0!@#$%', 'c-d']),
-    (u'(1😀)', ['1😀']),
-    ('(a b c (d e f () |x yz|))', ['a', 'b', 'c', ['d', 'e', 'f', [], '|x yz|']]),
-    ('(1 (2 3) (4 5) 6 (7 (8 9)))', ['1', ['2', '3'], ['4', '5'], '6', ['7', ['8', '9']]]),
-    ('(1 (2 3) (4 5)); 6 (7 (8 9)))', ['1', ['2', '3'], ['4', '5']]),
+    ('', [None]),
+    ('()', [[]]),
+    ('  ()    ', [[]]),
+    ('(|a b c| || "abc\\"def" |abcgf xs!!|)', [['|a b c|', '||', '"abc"def"', '|abcgf xs!!|']]),
+    ('(abc b0!@#$% c-d)', [['abc', 'b0!@#$%', 'c-d']]),
+    (u'(1😀)', [['1😀']]),
+    ('(a b c (d e f () |x yz|))', [['a', 'b', 'c', ['d', 'e', 'f', [], '|x yz|']]]),
+    ('(1 (2 3) (4 5) 6 (7 (8 9)))', [['1', ['2', '3'], ['4', '5'], '6', ['7', ['8', '9']]]]),
+    ('(1 (2 3) (4 5)); 6 (7 (8 9)))', [['1', ['2', '3'], ['4', '5']]]),
+    ('(1 2) (3 (4 5))', [['1', '2'], ['3', ['4', '5']]]),
 ])
 def test_correct(input, expected):
-    res, _ = tinysexpr.read(StringIO(input))
-    assert to_list(res) == expected if expected is not None else res == None
+    for res, exp in zip(tinysexpr.read(StringIO(input)), expected):
+        assert to_list(res) == exp if exp is not None else res == None
 
 @pytest.mark.parametrize("input,cls", [
     # ('', tinysexpr.UnexpectedEOF),
@@ -35,4 +36,5 @@ def test_correct(input, expected):
 ])
 def test_error(input, cls):
     with pytest.raises(cls) as e:
-        tinysexpr.read(StringIO(input))
+        for _ in tinysexpr.read(StringIO(input)):
+            pass

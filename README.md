@@ -4,20 +4,19 @@ A very simple [S-expression](https://en.m.wikipedia.org/wiki/S-expression) parse
 
 ## Example
 
-This module provides a single function
+This module provides a single iterator
 ```
-def read(file_like, coords=(1, 1), delims=DEFAULT_DELIMS, comment_char=';', atom_handler=lambda x: x) -> tuple[SExpr, Coord]:
+def read(file_like, coords=(1, 1), delims=DEFAULT_DELIMS, comment_char=';', atom_handler=lambda x: x)
 ```
-that returns the read S-expression.
+that reads all S-expressions in the `file_like`.
 Reading
 ```
 (a b c (123 e f () x))
 ```
-returns a `Sequence` object that corresponds to this nesting
+returns a `Sequence` object that corresponds to this nesting:
 ```
 ['a', 'b', 'c', ['123', 'e', 'f', [], 'x']]
 ```
-and the row/col coordinates of the next character in the input.
 
 The sequence object has a field `range` that is a pair of row/col pairs that give the coordinates of the S-expression in the input.
 Furthermore, it has a tuple `item_ranges` that gives the coordinates of the `i`-th item of the S-expression.

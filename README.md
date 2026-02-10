@@ -6,7 +6,7 @@ A very simple [S-expression](https://en.m.wikipedia.org/wiki/S-expression) parse
 
 This module provides a single function
 ```
-def read(file_like, delims=DEFAULT_DELIMS, comment_char=';', atom_handler=lambda x: x):
+def read(file_like, coords=(1, 1), delims=DEFAULT_DELIMS, comment_char=';', atom_handler=lambda x: x) -> tuple[SExpr, Coord]:
 ```
 that returns the read S-expression.
 Reading

@@ -13,12 +13,14 @@ Reading
 ```
 (a b c (123 e f () x))
 ```
-returns a `Sequence` object that corresponds to this nesting:
+returns a `Sequence` object that corresponds to this nesting
 ```
 ['a', 'b', 'c', ['123', 'e', 'f', [], 'x']]
 ```
-This sequence object has a field `range` that is a pair of row/col pairs that give the coordinates of the S-expression in the input.
-Furthermore, it has a function `range_of_item` that takes an index `i` and gives the coordinates of the `i`-th item of the S-expression.
+and the row/col coordinates of the next character in the input.
+
+The sequence object has a field `range` that is a pair of row/col pairs that give the coordinates of the S-expression in the input.
+Furthermore, it has a tuple `item_ranges` that gives the coordinates of the `i`-th item of the S-expression.
 
 ## Atoms
 

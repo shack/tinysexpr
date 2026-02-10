@@ -18,7 +18,7 @@ def to_list(sexpr):
     ('(1 (2 3) (4 5)); 6 (7 (8 9)))', ['1', ['2', '3'], ['4', '5']]),
 ])
 def test_correct(input, expected):
-    res = tinysexpr.read(StringIO(input))
+    res, _ = tinysexpr.read(StringIO(input))
     assert to_list(res) == expected if expected is not None else res == None
 
 @pytest.mark.parametrize("input,cls", [

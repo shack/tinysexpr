@@ -14,9 +14,6 @@ class SExpr(Sequence):
     def __post_init__(self):
         assert len(self.s) == len(self.item_ranges), f'{self.s} {len(self.s)} {len(self.item_ranges)}'
 
-    def range_of_item(self, i):
-        return self.item_ranges[i]
-
     def __getitem__(self, i):
         return self.s[i]
 
@@ -51,7 +48,7 @@ DEFAULT_DELIMS = {
     '|': (None, {})
 }
 
-def read(file_like, delims=DEFAULT_DELIMS, comment_char=';', atom_handler=lambda x: x) -> SExpr:
+def read(file_like, coord=(1, 1), delims=DEFAULT_DELIMS, comment_char=';', atom_handler=lambda x: x) -> tuple[SExpr, Coord]:
     """Parse an S-expression from a file-like object.
 
     The function takes the following arguments:
@@ -73,7 +70,6 @@ def read(file_like, delims=DEFAULT_DELIMS, comment_char=';', atom_handler=lambda
     sym_delim = { c for c in '()' + comment_char + ''.join(delims.keys()) }
     ch = file_like.read(1)
     prev_coord = None
-    coord = (1, 1)
 
     def curr():
         return ch
@@ -139,12 +135,12 @@ def read(file_like, delims=DEFAULT_DELIMS, comment_char=';', atom_handler=lambda
             match c:
                 case '(':
                     next()
-                    s = parse(prev_coord)
+                    s, _ = parse(prev_coord)
                     exp.append(s)
                     ranges.append(s.range)
                 case ')':
                     next()
-                    return SExpr(tuple(exp), (begin, prev_coord), tuple(ranges))
+                    return SExpr(tuple(exp), (begin, prev_coord), tuple(ranges)), coord
                 case _ if c in delims:
                     b = coord
                     exp.append(atom_handler(read_delim(c, delims[c])))
@@ -160,7 +156,7 @@ def read(file_like, delims=DEFAULT_DELIMS, comment_char=';', atom_handler=lambda
             next()
             return parse(prev_coord)
         case '':
-            return None
+            return (None, coord)
         case c:
             raise UnexpectedChar('(', c)
 

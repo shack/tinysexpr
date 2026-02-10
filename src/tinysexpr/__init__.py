@@ -1,9 +1,21 @@
 from collections.abc import Sequence
+from dataclasses import dataclass
+from typing import Any
 
+type Coord = tuple[int, int]
+type Range = tuple[Coord, Coord]
+
+@dataclass(frozen=True)
 class SExpr(Sequence):
-    def __init__(self, s, coord):
-        self.s = s
-        self.coord = coord
+    s: tuple[Any, ...]
+    range: Range
+    item_ranges: tuple[Range, ...]
+
+    def __post_init__(self):
+        assert len(self.s) == len(self.item_ranges), f'{self.s} {len(self.s)} {len(self.item_ranges)}'
+
+    def range_of_item(self, i):
+        return self.item_ranges[i]
 
     def __getitem__(self, i):
         return self.s[i]
@@ -60,20 +72,21 @@ def read(file_like, delims=DEFAULT_DELIMS, comment_char=';', atom_handler=lambda
 
     sym_delim = { c for c in '()' + comment_char + ''.join(delims.keys()) }
     ch = file_like.read(1)
-    row = 1
-    col = 1
+    prev_coord = None
+    coord = (1, 1)
 
     def curr():
         return ch
 
     def next():
-        nonlocal ch, row, col
+        nonlocal ch, coord, prev_coord
         ch = file_like.read(1)
+        prev_coord = coord
+        row, col = coord
         if ch == '\n':
-            row += 1
-            col = 1
+            coord = (row + 1, 1)
         else:
-            col += 1
+            coord = (row, col + 1)
         return ch
 
     def skip_ws():
@@ -88,7 +101,7 @@ def read(file_like, delims=DEFAULT_DELIMS, comment_char=';', atom_handler=lambda
                 break
         return c
 
-    def parse(coord):
+    def parse(begin):
         def read_delim(delim, delim_info):
             escape_char, escape_map = delim_info
             read = [curr()]
@@ -118,30 +131,34 @@ def read(file_like, delims=DEFAULT_DELIMS, comment_char=';', atom_handler=lambda
             return ''.join(read)
 
         exp = []
+        ranges = []
         while True:
             c = skip_ws()
             if not c:
                 raise UnexpectedEOF()
             match c:
                 case '(':
-                    coord = (row, col)
                     next()
-                    s = parse(coord)
+                    s = parse(prev_coord)
                     exp.append(s)
+                    ranges.append(s.range)
                 case ')':
                     next()
-                    return SExpr(tuple(exp), coord)
+                    return SExpr(tuple(exp), (begin, prev_coord), tuple(ranges))
                 case _ if c in delims:
+                    b = coord
                     exp.append(atom_handler(read_delim(c, delims[c])))
+                    ranges.append((b, prev_coord))
                 case _:
                     assert not c.isspace()
+                    b = coord
                     exp.append(atom_handler(read_atom()))
+                    ranges.append((b, prev_coord))
 
     match skip_ws():
         case '(':
-            coord = (row, col)
             next()
-            return parse(coord)
+            return parse(prev_coord)
         case '':
             return None
         case c:

@@ -4,11 +4,16 @@ import tinysexpr
 from io import StringIO
 
 def to_list(sexpr):
-    return [ to_list(x) if isinstance(x, tinysexpr.SExpr) else x for x in sexpr ]
+    if not isinstance(sexpr, tinysexpr.SExpr):
+        return sexpr
+    return [ to_list(x) for x in sexpr ]
 
 @pytest.mark.parametrize("input,expected", [
     ('', [None]),
     ('()', [[]]),
+    ('a', ['a']),
+    ('(a)', [['a']]),
+    ('|a b|', ['|a b|']),
     ('  ()    ', [[]]),
     ('(|a b c| || "abc\\"def" |abcgf xs!!|)', [['|a b c|', '||', '"abc"def"', '|abcgf xs!!|']]),
     ('(abc b0!@#$% c-d)', [['abc', 'b0!@#$%', 'c-d']]),
@@ -24,7 +29,7 @@ def test_correct(input, expected):
 
 @pytest.mark.parametrize("input,cls", [
     # ('', tinysexpr.UnexpectedEOF),
-    ('abc', tinysexpr.UnexpectedChar),
+    (')', tinysexpr.UnexpectedChar),
     ('(', tinysexpr.UnexpectedEOF),
     ('(  ', tinysexpr.UnexpectedEOF),
     ('(a  ', tinysexpr.UnexpectedEOF),

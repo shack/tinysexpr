@@ -102,37 +102,37 @@ def read(file_like, delims=DEFAULT_DELIMS, comment_char=';', atom_handler=lambda
                 break
         return c
 
-    def parse(begin):
-        def read_delim(delim, delim_info):
-            escape_char, escape_map = delim_info
-            begin = coord
-            read = [curr()]
-            c = next()
-            while c:
-                if c == escape_char:
-                    c = next()
-                    if c in escape_map:
-                        read.append(escape_map[c])
-                    else:
-                        raise InvalidEscape(coord, c)
-                elif c == delim:
-                    read.append(c)
-                    next()
-                    return (''.join(read), (begin, coord))
+    def read_delim(delim, delim_info):
+        escape_char, escape_map = delim_info
+        begin = coord
+        read = [curr()]
+        c = next()
+        while c:
+            if c == escape_char:
+                c = next()
+                if c in escape_map:
+                    read.append(escape_map[c])
                 else:
-                    read.append(c)
-                c = next()
-            raise UnexpectedEOF(coord)
-
-        def read_atom():
-            read = []
-            begin = coord
-            c = curr()
-            while c and not c.isspace() and c not in sym_delim:
+                    raise InvalidEscape(coord, c)
+            elif c == delim:
                 read.append(c)
-                c = next()
-            return (''.join(read), (begin, coord))
+                next()
+                return (''.join(read), (begin, coord))
+            else:
+                read.append(c)
+            c = next()
+        raise UnexpectedEOF(coord)
 
+    def read_atom():
+        read = []
+        begin = coord
+        c = curr()
+        while c and not c.isspace() and c not in sym_delim:
+            read.append(c)
+            c = next()
+        return (''.join(read), (begin, coord))
+
+    def parse(begin):
         exp = []
         while True:
             c = skip_ws()
@@ -156,15 +156,15 @@ def read(file_like, delims=DEFAULT_DELIMS, comment_char=';', atom_handler=lambda
         match skip_ws():
             case '(':
                 next()
-                try:
-                    res = parse(coord)
-                except SyntaxError as e:
-                    raise e
-                yield res
+                yield parse(coord)
             case '':
                 return
-            case c:
-                raise UnexpectedChar(coord, '(', c)
+            case ')':
+                raise UnexpectedChar(coord, '(', ')')
+            case c if c in delims:
+                yield atom_handler(*read_delim(c, delims[c]))
+            case _:
+                yield atom_handler(*read_atom())
 
 if __name__ == '__main__':
     import sys
